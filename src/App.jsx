@@ -8,14 +8,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, Gamepad2, Trophy, Ghost, Puzzle, Rocket, X, Maximize2, Minimize2, ExternalLink } from 'lucide-react';
 import gamesData from './data/games.json';
 
-interface Game {
-  id: number;
-  title: string;
-  category: string;
-  thumbnail: string;
-  url: string;
-}
-
 const CATEGORIES = [
   { name: 'All', icon: <Gamepad2 className="w-4 h-4" /> },
   { name: 'Action', icon: <Rocket className="w-4 h-4" /> },
@@ -28,13 +20,13 @@ const CATEGORIES = [
 export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedGame, setSelectedGame] = useState<Game | null>(null);
+  const [selectedGame, setSelectedGame] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   // Filter logic with safety check
   const filteredGames = useMemo(() => {
     if (!Array.isArray(gamesData)) return [];
-    return (gamesData as Game[]).filter((game) => {
+    return gamesData.filter((game) => {
       const matchesSearch = game.title?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
       const matchesCategory = selectedCategory === 'All' || game.category === selectedCategory;
       return matchesSearch && matchesCategory;
@@ -42,7 +34,7 @@ export default function App() {
   }, [searchQuery, selectedCategory]);
 
   const featuredGame = useMemo(() => {
-    return Array.isArray(gamesData) && gamesData.length > 0 ? (gamesData[0] as Game) : null;
+    return Array.isArray(gamesData) && gamesData.length > 0 ? gamesData[0] : null;
   }, []);
 
   return (
@@ -78,7 +70,7 @@ export default function App() {
           <button 
             onClick={() => {
               const random = gamesData[Math.floor(Math.random() * gamesData.length)];
-              setSelectedGame(random as Game);
+              setSelectedGame(random);
             }}
             className="hidden lg:flex items-center gap-2 px-6 py-2.5 bg-white text-black rounded-xl font-black text-xs uppercase hover:bg-indigo-500 hover:text-white transition-all shadow-lg"
           >
@@ -150,7 +142,7 @@ export default function App() {
 
                   {/* Side Cards */}
                   <div className="md:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-6">
-                    {(gamesData as Game[]).slice(1, 3).map((game) => (
+                    {gamesData.slice(1, 3).map((game) => (
                       <div 
                         key={game.id}
                         onClick={() => setSelectedGame(game)}
@@ -299,7 +291,7 @@ export default function App() {
   );
 }
 
-function GameCard({ game, onClick }: { game: Game; onClick: () => void }) {
+function GameCard({ game, onClick }) {
   return (
     <motion.div
       layout
