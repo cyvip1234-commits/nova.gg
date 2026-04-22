@@ -31,14 +31,19 @@ export default function App() {
   const [selectedGame, setSelectedGame] = useState<Game | null>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  // Filter logic
+  // Filter logic with safety check
   const filteredGames = useMemo(() => {
+    if (!Array.isArray(gamesData)) return [];
     return (gamesData as Game[]).filter((game) => {
-      const matchesSearch = game.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const matchesSearch = game.title?.toLowerCase().includes(searchQuery.toLowerCase()) || false;
       const matchesCategory = selectedCategory === 'All' || game.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
   }, [searchQuery, selectedCategory]);
+
+  const featuredGame = useMemo(() => {
+    return Array.isArray(gamesData) && gamesData.length > 0 ? (gamesData[0] as Game) : null;
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0A0A0B] text-gray-200 font-sans">
@@ -111,7 +116,7 @@ export default function App() {
         {!selectedGame ? (
           <>
             {/* Featured Section */}
-            {searchQuery === '' && selectedCategory === 'All' && (
+            {searchQuery === '' && selectedCategory === 'All' && featuredGame && (
               <div className="mb-12">
                 <div className="flex justify-between items-center mb-6">
                   <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-gray-500">Trending Now</h3>
@@ -124,18 +129,18 @@ export default function App() {
                 <div className="grid grid-cols-1 md:grid-cols-12 gap-6 h-[400px]">
                   {/* Hero Featured Card */}
                   <div 
-                    onClick={() => setSelectedGame(gamesData[0] as Game)}
+                    onClick={() => setSelectedGame(featuredGame)}
                     className="md:col-span-8 bg-[#121214] rounded-2xl border border-white/5 p-8 flex flex-col justify-end relative overflow-hidden group shadow-2xl cursor-pointer"
                   >
                     <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-t from-black via-black/20 to-transparent z-10 opacity-80"></div>
                     <img 
-                      src={gamesData[0].thumbnail} 
+                      src={featuredGame.thumbnail} 
                       className="absolute inset-0 w-full h-full object-cover z-0 opacity-40 group-hover:scale-110 transition-transform duration-700" 
                       alt="Featured"
                     />
                     <div className="z-20">
                       <span className="bg-indigo-600 text-[10px] font-black px-2 py-1 rounded uppercase tracking-widest text-white">Daily Featured</span>
-                      <h2 className="text-4xl md:text-5xl font-black text-white mt-3 leading-tight tracking-tight uppercase italic">{gamesData[0].title}</h2>
+                      <h2 className="text-4xl md:text-5xl font-black text-white mt-3 leading-tight tracking-tight uppercase italic">{featuredGame.title}</h2>
                       <p className="text-gray-300 text-sm mt-3 max-w-md hidden sm:block">Experience the most popular title in our unblocked library today. Fast, responsive, and full of action.</p>
                       <button className="mt-6 bg-white text-black font-black px-8 py-4 rounded-xl text-xs uppercase flex items-center gap-2 hover:bg-indigo-500 hover:text-white transition-all">
                         PLAY NOW <Rocket className="w-4 h-4" />
